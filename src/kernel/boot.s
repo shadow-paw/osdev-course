@@ -1,25 +1,123 @@
 cpu 586
 bits 32
 
-global _start
+%include "kernel.inc"
+
+global bootstrap, MMU_PD
 extern kmain
+extern _kernel_end
+extern ctor_start, ctor_end, dtor_start, dtor_end
 
 ; Data
 ; ---------------------------------------------------------------------
 section .bss
-align 16
+align 4096
 ; Mini-stack for bootstrap, we shall setup a proper stack afterward.
 %define KSTACK_SIZE (8192)
 kstack  resb KSTACK_SIZE
+align 4096
+MMU_PD resb 4096
+MMU_PT resb 4096
+tss    resb 104
+
+section .data
+align 16
+gdtr    dw 6 *8 -1
+        dd gdt
+        dw 0
+align 16
+gdt     dd 0, 0
+        dd 0x0000FFFF, 0x00CF9A00  ; 0x08 CODE32 DPL0
+        dd 0x0000FFFF, 0x00CF9200  ; 0x10 DATA32 DPL0
+        dd 0x0000FFFF, 0x00CFFA00  ; 0x18 CODE32 DPL3
+        dd 0x0000FFFF, 0x00CFF200  ; 0x20 DATA32 DPL3
+        dd 0, 0                    ; TSS
 
 ; Bootstrap Code
 ; ---------------------------------------------------------------------
 section .text
-_start:
-    ; Setup mini-stack
-    mov esp, kstack + KSTACK_SIZE
+bootstrap:
+    ; Setup page tables
+    ; Linear 1M -> Physical 1M (kernel loaded addr)
+    ; Linear 3.75G -> Physical 1M (kernel loaded addr)
+    mov     esi, VMA2PMA(MMU_PD)
+    mov     edi, VMA2PMA(MMU_PT)
+    ; PDT: both PMA and VMA points to the PTs
+    mov     dword [esi + (KERNEL_PMA>>22)*4], VMA2PMA(MMU_PT) +3
+    mov     dword [esi + (KERNEL_VMA>>22)*4], VMA2PMA(MMU_PT) +3
+    ; PT: iterate all 4k pages until kernel end
+    mov     ebx, VMA2PMA(_kernel_end)
+    mov     eax, 3
+.1:
+    stosd
+    add     eax, 4096
+    cmp     eax, ebx
+    jb      .1
+    ; Enable paging
+    mov     cr3, esi
+    mov     eax, cr0
+    or      eax, 0x80000000
+    mov     cr0, eax
+    ; eip -> higher end of virtual address space
+    mov     eax, dword .higher_half
+    jmp     eax
+.higher_half:
+    ; Load GDT & Reload selectors
+    lgdt    [gdtr]
+    mov     eax, SEG_DATA32_0
+    mov     ds, ax
+    mov     es, ax
+    mov     fs, ax
+    mov     gs, ax
+    mov     ss, ax
+    mov     esp, dword kstack + KSTACK_SIZE
+    jmp     dword SEG_CODE32_0:.reload_cs
+.reload_cs:
+    ; Unmap 1M
+    mov     dword [esi + (KERNEL_PMA>>22)*4], 0
+    mov     cr3, esi
+
+    ; TSS
+    mov     dword [tss + tss32_ss0], SEG_DATA32_0
+    mov     dword [tss + tss32_esp0], esp
+    mov     eax, tss
+    shl     eax, 16
+    or      eax, 67h                ; [Base 15..00][Limit 15..00]
+    mov     [gdt + SEG_TSS], eax
+    mov     eax, dword tss
+    mov     edx, dword tss
+    shr     edx, 16
+    and     eax, 0xFF000000
+    and     edx, 0x000000FF
+    or      eax, edx
+    or      eax, 0x00008900
+    mov     [gdt + SEG_TSS +4], eax
+    mov     eax, SEG_TSS
+    ltr     ax
+
+    ; Setup minimal C environment
+    xor     ebp, ebp
+    ; constructors
+    mov     ebx, ctor_start
+    jmp     .ctors_until_end
+.call_ctors:
+    call    [ebx]
+    add     ebx, 4
+.ctors_until_end:
+    cmp     ebx, ctor_end
+    jb      .call_ctors
 
     call kmain
+
+    ; destructors
+    mov     ebx, dtor_end
+    jmp     .dtors_until_end
+.call_dtors:
+    sub     ebx, 4
+    call    [ebx]
+.dtors_until_end:
+    cmp     ebx, dtor_start
+    ja      .call_dtors
 
     cli
 .halt:

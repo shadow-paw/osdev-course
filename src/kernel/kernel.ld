@@ -1,43 +1,50 @@
-/* The bootloader will look at this image and start execution at the symbol
-   designated as the entry point. */
-ENTRY(_start)
+ENTRY(bootstrap)
 
-/* Tell where the various sections of the object files will be put in the final
-   kernel image. */
+/* Our kernel will be sit on top -256MB */
+KERNEL_BASE = 0xF0000000;
+KERNEL_PMA = 0x00100000;
+KERNEL_VMA = KERNEL_BASE + KERNEL_PMA;
+
 SECTIONS
 {
-	/* Begin putting sections at 1 MiB, a conventional place for kernels to be
-	   loaded at by the bootloader. */
-	. = 1M;
+    . = KERNEL_VMA;
+    _kernel_start = .;
 
-	/* First put the multiboot header, as it is required to be put very early
-	   early in the image or the bootloader won't recognize the file format.
-	   Next we'll put the .text section. */
-	.text BLOCK(4K) : ALIGN(4K)
-	{
-		*(.multiboot)
-		*(.text)
-	}
+    .text BLOCK(4K) : AT(KERNEL_PMA) {
+        *(.multiboot)
+        *(.text)
+		*(.gnu.linkonce.t*)
+    }
 
-	/* Read-only data. */
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
+    .rodata BLOCK(4K) : ALIGN(4K) {
+        *(.rodata)
+		*(.gnu.linkonce.r*)
+		ctor_start = .;
+        *(SORT(.ctors*))
+        ctor_end = .;
+        dtor_start = .;
+        *(SORT(.dtors*))
+        dtor_end = .;
+    }
 
-	/* Read-write data (initialized) */
-	.data BLOCK(4K) : ALIGN(4K)
-	{
-		*(.data)
-	}
+    .data BLOCK(4K) :ALIGN(4K) {
+        *(.data)
+		*(.gnu.linkonce.d*)
+    }
 
-	/* Read-write data (uninitialized) and stack */
-	.bss BLOCK(4K) : ALIGN(4K)
-	{
-		*(COMMON)
-		*(.bss)
-	}
+    .bss BLOCK(4K) : ALIGN(4K) {
+        sbss = .;
+        *(COMMON)
+        *(.bss)
+        *(.gnu.linkonce.b*)
+        ebss = .;
+    }
 
-	/* The compiler may produce other sections, by default it will put them in
-	   a segment with the same name. Simply add stuff here as needed. */
+    _kernel_end = .;
+
+	/DISCARD/ :
+    {
+        *(.comment)
+        *(.eh_frame*)
+    }
 }
