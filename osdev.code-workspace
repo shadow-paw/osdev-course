@@ -7,6 +7,7 @@
         "settings": {
                 "files.trimTrailingWhitespace": true,
                 "files.exclude": {
+                        ".gdb_history": true,
                         ".vscode/": true,
                         "*.code-workspace": true,
                         "**/bin/": true,

@@ -1,6 +1,6 @@
 #include "serial.h"
 
-void kernel_main(void) {
+void kmain(void) {
     char name[1024];
     serial_init(0);
     for (;;) {
