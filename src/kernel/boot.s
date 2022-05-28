@@ -4,7 +4,7 @@ bits 32
 %include "kernel.inc"
 
 global bootstrap, MMU_PD
-extern kmain
+extern kmain, idt_init
 extern _kernel_end
 extern ctor_start, ctor_end, dtor_start, dtor_end
 
@@ -99,6 +99,9 @@ bootstrap:
     mov     [gdt + SEG_TSS +4], eax
     mov     eax, SEG_TSS
     ltr     ax
+
+    ; Setup IDT
+    call    idt_init
 
     ; Setup minimal C environment
     xor     ebp, ebp
