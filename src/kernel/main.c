@@ -1,5 +1,6 @@
 #include "multiboot.h"
 #include "mmu.h"
+#include "kmalloc.h"
 #include "serial.h"
 #include "kdebug.h"
 
@@ -16,6 +17,10 @@ void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     }
 
     mmu_init(map, map_count);
+    char* p = (char*)kmalloc(16);
+    p[0] = 'A';
+    p[1] = 0;
+    kdebug("p: %p, %s\n", p, p);
 
     for (;;) {
         serial_puts(0, "What is your name? ");
