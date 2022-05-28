@@ -4,8 +4,13 @@ CROSS_AS=nasm
 CROSS_GCC=i686-elf-gcc
 CROSS_OBJCOPY=i686-elf-objcopy
 CROSS_ASMFLAGS=-felf32 -g
-CROSS_CFLAGS=-ffreestanding -std=c11 -O2 -masm=intel -Wall -Wextra -g
-CROSS_CPPFLAGS=-ffreestanding -std=c++17 -O2 -Wall -Wextra -g
+CROSS_CFLAGS=-ffreestanding -std=c11 -masm=intel \
+             -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow \
+			 -O2 -Wall -Wextra -g
+CROSS_CPPFLAGS=-ffreestanding -std=c++17 -masm=intel \
+               -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow \
+               -fno-exceptions -fno-rtti -fno-stack-protector \
+			   -O2 -Wall -Wextra -g
 CROSS_LDFLAGS=-ffreestanding -O2 -nostdlib
 CROSS_GDB=i686-elf-gdb
 

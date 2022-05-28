@@ -55,4 +55,15 @@ struc TSS32
     tss32_iobase    resw    1
 endstruc
 
+%macro call 1-*
+    %define _proc %1
+    %assign _argc (%0-1)*4
+    %rep %0 -1
+        %rotate -1
+        push    %1
+    %endrep
+    call _proc
+    add esp, _argc
+%endmacro
+
 %endif

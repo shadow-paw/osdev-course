@@ -15,6 +15,8 @@ void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
         kdebug("mmap: %lx, size: %lx = %X\n", map[i].addr, map[i].len, map[i].type);
     }
 
+    mmu_init(map, map_count);
+
     for (;;) {
         serial_puts(0, "What is your name? ");
         size_t len = serial_gets(0, name, true);
