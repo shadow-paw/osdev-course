@@ -1,5 +1,5 @@
-#ifndef __KERNEL_SERIAL_H__
-#define __KERNEL_SERIAL_H__
+#ifndef KERNEL_SERIAL_H_
+#define KERNEL_SERIAL_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,4 +18,4 @@ size_t serial_gets(int port, char* des, bool echo);
 }  // extern "C"
 #endif
 
-#endif  // __KERNEL_SERIAL_H__
+#endif  // KERNEL_SERIAL_H_

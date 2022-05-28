@@ -37,6 +37,11 @@ gdt     dd 0, 0
 ; ---------------------------------------------------------------------
 section .text
 bootstrap:
+    ; Upon boot, ebx is point to multiboot information.
+    ; We will avoid using ebx in the bootstrap and it should be
+    ; preserved when calling ctor/dtor (cdecl convention).
+    ; The multiboot information should be passed to kmain.
+
     ; Setup page tables
     ; Linear 1M -> Physical 1M (kernel loaded addr)
     ; Linear 3.75G -> Physical 1M (kernel loaded addr)
@@ -46,12 +51,12 @@ bootstrap:
     mov     dword [esi + (KERNEL_PMA>>22)*4], VMA2PMA(MMU_PT) +3
     mov     dword [esi + (KERNEL_VMA>>22)*4], VMA2PMA(MMU_PT) +3
     ; PT: iterate all 4k pages until kernel end
-    mov     ebx, VMA2PMA(_kernel_end)
+    mov     ecx, VMA2PMA(_kernel_end)
     mov     eax, 3
 .1:
     stosd
     add     eax, 4096
-    cmp     eax, ebx
+    cmp     eax, ecx
     jb      .1
     ; Enable paging
     mov     cr3, esi
@@ -98,25 +103,28 @@ bootstrap:
     ; Setup minimal C environment
     xor     ebp, ebp
     ; constructors
-    mov     ebx, ctor_start
+    mov     ecx, ctor_start
     jmp     .ctors_until_end
 .call_ctors:
-    call    [ebx]
-    add     ebx, 4
+    call    [ecx]
+    add     ecx, 4
 .ctors_until_end:
-    cmp     ebx, ctor_end
+    cmp     ecx, ctor_end
     jb      .call_ctors
 
-    call kmain
+    add     ebx, KERNEL_BASE ; multiboot info, convert to VMA
+    push    ebx
+    call    kmain
+    add     esp, 4
 
     ; destructors
-    mov     ebx, dtor_end
+    mov     ecx, dtor_end
     jmp     .dtors_until_end
 .call_dtors:
-    sub     ebx, 4
-    call    [ebx]
+    sub     ecx, 4
+    call    [ecx]
 .dtors_until_end:
-    cmp     ebx, dtor_start
+    cmp     ecx, dtor_start
     ja      .call_dtors
 
     cli
