@@ -171,5 +171,5 @@ export PATH=$PATH:$HOME/.local/cross/bin
 ## Useful Resources
 - [https://wiki.osdev.org/](https://wiki.osdev.org/)
 - [https://forum.osdev.org/](https://forum.osdev.org/)
-- **[Intel® 64 and IA-32 Architectures Software Developer Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)**
+- [Intel® 64 and IA-32 Architectures Software Developer Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 - [Arm Architecture Reference Manual](https://developer.arm.com/documentation/ddi0487/ha/)
