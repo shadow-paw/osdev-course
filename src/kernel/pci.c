@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "ioport.h"
 #include "pci.h"
+#include "bga.h"
 #include "kdebug.h"
 
 #define PCI_CONFIG_ADDRESS (0xCF8)
@@ -97,6 +98,9 @@ bool pci_scanbus() {
                     switch (info.subclass_code) {
                     case 0:     // Display
                         kdebug("Found Display\n");
+                        bga_init(&addr, &info);
+                        bga_set_mode(2);
+                        bga_clear_screen();
                         break;
                     } break;
                 }

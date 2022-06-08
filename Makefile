@@ -19,9 +19,9 @@ build: kernel-build
 dist: kernel-dist
 	@:
 run: dist
-	@qemu-system-i386 -display curses -m 32 -cdrom dist/myos.iso
+	@qemu-system-i386 -m 32 -cdrom dist/myos.iso
 debug: dist
-	@qemu-system-i386 -s -S -display curses -m 32 -cdrom dist/myos.iso
+	@qemu-system-i386 -s -S -m 32 -cdrom dist/myos.iso
 gdb:
 	@$(CROSS_GDB) \
 	  --eval-command="set disassembly-flavor intel" \
