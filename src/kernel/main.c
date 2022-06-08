@@ -4,10 +4,11 @@
 #include "kmalloc.h"
 #include "serial.h"
 #include "pic.h"
+#include "pci.h"
 #include "kdebug.h"
 
 void _timer(uint64_t tsc) {
-    kdebug("timer: %lx\n", tsc);
+    // kdebug("timer: %lx\n", tsc);
 }
 void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     char name[1024];
@@ -29,6 +30,8 @@ void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
 
     pic_init();
     _STI();
+
+    pci_scanbus();
 
     for (;;) {
         serial_puts(0, "What is your name? ");
