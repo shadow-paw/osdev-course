@@ -1,9 +1,14 @@
+#include "inlineasm.h"
 #include "multiboot.h"
 #include "mmu.h"
 #include "kmalloc.h"
 #include "serial.h"
+#include "pic.h"
 #include "kdebug.h"
 
+void _timer(uint64_t tsc) {
+    kdebug("timer: %lx\n", tsc);
+}
 void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     char name[1024];
     serial_init(0);
@@ -21,6 +26,9 @@ void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     p[0] = 'A';
     p[1] = 0;
     kdebug("p: %p, %s\n", p, p);
+
+    pic_init();
+    _STI();
 
     for (;;) {
         serial_puts(0, "What is your name? ");
