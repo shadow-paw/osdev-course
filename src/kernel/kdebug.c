@@ -1,9 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include "serial.h"
-
-#define DEBUG_SERIAL_PORT 0
+#include "ioport.h"
 
 char tohex(int digit, bool upper) {
     static const char up_digits[] = "0123456789ABCDEF";
@@ -34,6 +32,20 @@ void hextoasc64(uint64_t num, char* des, bool upper) {
         *des++ = tohex(digit, upper);
     } *des = 0;
 }
+
+void kdebug_putc(char c) {
+    // TODO: improve this
+    const uint16_t base = 0x03F8;
+    while ((inb(base + 5) & 0x20) == 0) {
+      // Busy loop
+    }
+    outb(base, (uint8_t)c);
+}
+void kdebug_puts(const char* s) {
+    for (const char* p = s; *p; p++) {
+        kdebug_putc(*p);
+    }
+}
 void kdebug(const char* fmt, ...) {
     char buf[32];
     const char* p;
@@ -49,10 +61,10 @@ void kdebug(const char* fmt, ...) {
     for (p=fmt; *p; p++) {
         c = *p;
         if (c == '\n') {
-            serial_putc(DEBUG_SERIAL_PORT, '\r');
-            serial_putc(DEBUG_SERIAL_PORT, '\n');
+            kdebug_putc('\r');
+            kdebug_putc('\n');
         } else if (c != '%') {
-            serial_putc(DEBUG_SERIAL_PORT, c);
+            kdebug_putc(c);
         } else {
             ++p;
             c = *p;
@@ -72,7 +84,7 @@ void kdebug(const char* fmt, ...) {
                         u32 = va_arg(va, uint32_t);
                         hextoasc32(u32, buf, false);
                     }
-                    serial_puts(DEBUG_SERIAL_PORT, buf);
+                    kdebug_puts(buf);
                     break;
                 case 'x':
                 case 'X':
@@ -84,7 +96,7 @@ void kdebug(const char* fmt, ...) {
                         u32 = va_arg(va, uint32_t);
                         hextoasc32(u32, buf, upper);
                     }
-                    serial_puts(DEBUG_SERIAL_PORT, buf);
+                    kdebug_puts(buf);
                     break;
                 case 'p':
                     u64 = (uint64_t)(uintptr_t)va_arg(va, const char*);
@@ -93,18 +105,18 @@ void kdebug(const char* fmt, ...) {
                     } else {
                         hextoasc64(u64, buf, false);
                     }
-                    serial_puts(DEBUG_SERIAL_PORT, buf);
+                    kdebug_puts(buf);
                     break;
                 case 's':
                     s = va_arg(va, const char*);
-                    serial_puts(DEBUG_SERIAL_PORT, s);
+                    kdebug_puts(s);
                     break;
                 case '%':
-                    serial_putc(DEBUG_SERIAL_PORT, c);
+                    kdebug_putc(c);
                     break;
                 default:
-                    serial_putc(DEBUG_SERIAL_PORT, '%');
-                    serial_putc(DEBUG_SERIAL_PORT, c);
+                    kdebug_putc('%');
+                    kdebug_putc(c);
                     break;
             }
         }

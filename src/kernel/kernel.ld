@@ -24,11 +24,14 @@ SECTIONS
 		*(.gnu.linkonce.r*)
         . = ALIGN(16);
 		ctor_start = .;
-        *(SORT(.ctors*))
+        *(.ctors)
         ctor_end = .;
         dtor_start = .;
-        *(SORT(.dtors*))
+        *(.dtors)
         dtor_end = .;
+        *(.rodata)
+        . = ALIGN(16);
+		*(.gnu.linkonce.r*)
     }
 
     .data BLOCK(4K) :ALIGN(4K) {
@@ -47,7 +50,6 @@ SECTIONS
         *(.gnu.linkonce.b*)
         ebss = .;
     }
-
     . = ALIGN(4096);
     _kernel_end = .;
 

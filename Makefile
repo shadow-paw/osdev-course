@@ -12,13 +12,13 @@ CROSS_CPPFLAGS=-ffreestanding -std=c++17 -masm=intel \
                -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow \
                -fno-exceptions -fno-rtti -fno-stack-protector \
 			   -O2 -Wall -Wextra -g
-CROSS_LDFLAGS=-ffreestanding -O2 -nostdlib
+CROSS_LDFLAGS=-fPIC -ffreestanding -O2 -nostdlib
 CROSS_GDB=i686-elf-gdb
 
 build: kernel-build
 	@:
 dist: kernel-dist
-	@:
+	@sync
 run: dist
 	@qemu-system-i386 -m 32 -display curses -cdrom dist/myos.iso
 debug: dist
