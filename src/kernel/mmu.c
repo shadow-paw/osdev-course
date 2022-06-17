@@ -54,7 +54,11 @@ bool mmu_mark(const void* addr, MMU_PHYADDR paddr, uint32_t flag) {
         }
     } return true;
 }
-bool mmu_init(const struct MULTIBOOT_BOOTINFO_MMAP* map, int map_count) {
+bool mmu_init(const struct MULTIBOOT_BOOTINFO* multiboot) {
+    const struct MULTIBOOT_BOOTINFO_MMAP* map =
+        (const struct MULTIBOOT_BOOTINFO_MMAP*)MMU_PMA2VMA(multiboot->mmap_addr);
+    const uint32_t map_count = multiboot->mmap_length / sizeof(struct MULTIBOOT_BOOTINFO_MMAP);
+
     const uint64_t kend = (MMU_VMA2PMA((uintptr_t)&_kernel_end)) + 4096;
     uint64_t start, end;
     uint32_t pt_index = 0;
@@ -66,7 +70,7 @@ bool mmu_init(const struct MULTIBOOT_BOOTINFO_MMAP* map, int map_count) {
     _MOVCR3(MMU_VMA2PMA(MMU_PD));
     // Build stack of available physical page
     MMU_frames_index = 0;
-    for (int i = 0; i < map_count; i++) {
+    for (uint32_t i = 0; i < map_count; i++) {
         if (map[i].type != 1) continue;
         start = ((map[i].addr + 4095) >>12) <<12;            // align to 4K
         end = ((map[i].addr + map[i].len) >>12) <<12;

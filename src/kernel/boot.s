@@ -4,9 +4,10 @@ bits 32
 %include "kernel.inc"
 
 global bootstrap, MMU_PD
-extern kmain, idt_init
+extern kmain, idt_init, mmu_init
 extern _kernel_end
 extern ctor_start, ctor_end, dtor_start, dtor_end
+extern _init, _fini
 
 ; Data
 ; ---------------------------------------------------------------------
@@ -105,30 +106,46 @@ bootstrap:
 
     ; Setup minimal C environment
     xor     ebp, ebp
-    ; constructors
-    mov     ecx, ctor_start
-    jmp     .ctors_until_end
-.call_ctors:
-    call    [ecx]
-    add     ecx, 4
-.ctors_until_end:
-    cmp     ecx, ctor_end
-    jb      .call_ctors
 
     add     ebx, KERNEL_BASE ; multiboot info, convert to VMA
     push    ebx
-    call    kmain
+    call    mmu_init
     add     esp, 4
 
+    ; constructors
+    mov     esi, ctor_start
+.ctors_next:
+    cmp     esi, ctor_end
+    jae     .ctors_done
+    mov     eax, [esi]
+    ; skip -1 and 0 as doc in https://gcc.gnu.org/onlinedocs/gccint/Initialization.html
+    or      eax, eax
+    jz      .ctors_skip
+    cmp     eax, -1
+    je      .ctors_skip
+    call    eax
+.ctors_skip:
+    add     esi, 4
+    jmp     .ctors_next
+.ctors_done:
+
+    call    kmain
+
     ; destructors
-    mov     ecx, dtor_end
-    jmp     .dtors_until_end
-.call_dtors:
-    sub     ecx, 4
-    call    [ecx]
-.dtors_until_end:
-    cmp     ecx, dtor_start
-    ja      .call_dtors
+    mov     esi, dtor_end
+.dtors_next:
+    sub     esi, 4
+    cmp     esi, dtor_start
+    jb      .dtors_done
+    mov     eax, [esi]
+    ; skip -1 and 0 as doc in https://gcc.gnu.org/onlinedocs/gccint/Initialization.html
+    or      eax, eax
+    jz      .dtors_next
+    cmp     eax, -1
+    je      .dtors_next
+    call    eax
+    jmp     .dtors_next
+.dtors_done:
 
     cli
 .halt:

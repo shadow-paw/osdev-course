@@ -8,6 +8,7 @@ CROSS_CFLAGS=-ffreestanding -std=c11 -masm=intel \
              -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow \
 			 -O2 -Wall -Wextra -g
 CROSS_CPPFLAGS=-ffreestanding -std=c++17 -masm=intel \
+			   -fno-use-cxa-atexit \
                -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow \
                -fno-exceptions -fno-rtti -fno-stack-protector \
 			   -O2 -Wall -Wextra -g
@@ -19,9 +20,9 @@ build: kernel-build
 dist: kernel-dist
 	@:
 run: dist
-	@qemu-system-i386 -m 32 -cdrom dist/myos.iso
+	@qemu-system-i386 -m 32 -display curses -cdrom dist/myos.iso
 debug: dist
-	@qemu-system-i386 -s -S -m 32 -cdrom dist/myos.iso
+	@qemu-system-i386 -s -S -m 32 -display curses -cdrom dist/myos.iso
 gdb:
 	@$(CROSS_GDB) \
 	  --eval-command="set disassembly-flavor intel" \
@@ -46,6 +47,9 @@ KERNEL_FILE_DEP:=$(patsubst %.o,%.d,$(KERNEL_FILE_O))
 KERNEL_BIN=$(KERNEL_PATH_BIN)myos.bin
 KERNEL_SYM=$(KERNEL_BIN:.bin=.sym)
 
+CRTBEGIN_OBJ:=$(shell $(CROSS_GCC) -print-file-name=crtbegin.o)
+CRTEND_OBJ:=$(shell $(CROSS_GCC) -print-file-name=crtend.o)
+
 -include $(KERNEL_FILE_DEP)
 
 kernel-build: $(KERNEL_BIN)
@@ -60,7 +64,7 @@ $(KERNEL_BIN): kernel-mkdir $(KERNEL_FILE_O) src/kernel/kernel.ld Makefile
 	  -T src/kernel/kernel.ld \
 	  -lgcc \
 	  -o $@ \
-	  $(KERNEL_FILE_O)
+	  $(CRTBEGIN_OBJ) $(CRTEND_OBJ) $(KERNEL_FILE_O)
 	@$(CROSS_OBJCOPY) --only-keep-debug $@ $(KERNEL_SYM)
 	@$(CROSS_OBJCOPY) --strip-debug --strip-unneeded $@
 

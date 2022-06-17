@@ -32,7 +32,7 @@ typedef uint32_t MMU_PHYADDR;
 #ifdef __cplusplus
 extern "C" {
 #endif
-bool mmu_init(const struct MULTIBOOT_BOOTINFO_MMAP* map, int count);
+bool mmu_init(const struct MULTIBOOT_BOOTINFO* multiboot);
 bool mmu_mmap(const void* mem, MMU_PHYADDR paddr, size_t size, unsigned int flag);
 bool mmu_munmap(const void* mem, size_t size, unsigned int flag);
 #ifdef __cplusplus
