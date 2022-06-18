@@ -12,5 +12,4 @@ void  kfree(const void* ptr);
 };
 #endif
 
-
 #endif  // KERNEL_KMALLOC_H_

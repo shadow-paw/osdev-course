@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+// https://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+
 #define MULTIBOOT_BOOTINFO_FLAGS_MEM            (1<<0)
 #define MULTIBOOT_BOOTINFO_FLAGS_BOOTDEVICE     (1<<1)
 #define MULTIBOOT_BOOTINFO_FLAGS_CMDLINE        (1<<2)
@@ -41,6 +43,13 @@ struct MULTIBOOT_BOOTINFO_MMAP {
   uint64_t addr;
   uint64_t len;
   uint32_t type;
+};
+
+struct MULTIBOOT_BOOTINFO_MODULES {
+  uint32_t start;
+  uint32_t end;
+  uint32_t name;
+  uint32_t reserved;
 };
 
 #endif  // KERNEL_ARCH_I686_MULTIBOOT_H_

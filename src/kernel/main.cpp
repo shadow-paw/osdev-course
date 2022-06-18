@@ -1,11 +1,25 @@
+#include "multiboot.h"
+#include "mmu.h"
 #include "hal.h"
+#include "kstring.h"
 #include "kdebug.h"
 
-extern "C" void kmain() {
+extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     kernel::hal.probe();
 
     kernel::hal.display_setmode(2);
     kernel::hal.display_clearscreen();
+
+    kdebug("multiboot->mods_count: %d\n", multiboot->mods_count);
+
+    const struct MULTIBOOT_BOOTINFO_MODULES* mods = (const struct MULTIBOOT_BOOTINFO_MODULES*)(mmu_pma2vma(multiboot->mods_addr));
+    for (uint32_t i=0; i<multiboot->mods_count; i++) {
+        const char* name = (const char*)mmu_pma2vma(mods[i].name);
+        if (kstrcmp(name, "initrd") == 0) {
+            size_t size = (size_t)(mods[i].end - mods[i].start);
+            kernel::hal.probe_initrd(mods[i].start, size);
+        }
+    }
 
     for (;;) {
         char name[1024];

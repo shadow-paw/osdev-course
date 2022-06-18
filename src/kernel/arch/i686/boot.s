@@ -108,9 +108,11 @@ bootstrap:
     xor     ebp, ebp
 
     add     ebx, KERNEL_BASE ; multiboot info, convert to VMA
+
+    ; init mmu
     push    ebx
     call    mmu_init
-    add     esp, 4
+    ; add     esp, 4  ; leave it on stack for kmain
 
     ; constructors
     mov     esi, ctor_start
@@ -130,6 +132,7 @@ bootstrap:
 .ctors_done:
 
     call    kmain
+    add     esp, 4  ; we got one from init_mmu
 
     ; destructors
     mov     esi, dtor_end

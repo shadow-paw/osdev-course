@@ -91,7 +91,7 @@ bool bga_set_mode(struct DISPLAY_DEVICE* device, unsigned int mode) {
         device->frame_buffer = vma_alloc(frame_buffer_size);
     }
     device->frame_buffer_size = (size_t)size;
-    if (!mmu_mmap(device->frame_buffer, bar, size, MMU_PAGE_MAPPHY)) return false;
+    if (!mmu_mmap(device->frame_buffer, bar, size, MMU_PAGE_NOALLOC)) return false;
 
     kdebug("    BGA : Change video mode: %d = %dx%dx%d, BAR:%X SIZE:%X\n",
            mode, device->info.width, device->info.height, device->info.bpp, bar, size);

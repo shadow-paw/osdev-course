@@ -10,6 +10,14 @@
 extern uint32_t MMU_PD[];
 extern char _kernel_start, _kernel_end;
 
+// Kernel Zone (-256MB ~ TOP)
+// -------------------------------------------------
+#define MMU_KERNEL_BASE (0xF0000000)
+#define MMU_KERNEL_PMA  (0x00100000)
+#define MMU_KERNEL_VMA  ((uintptr_t)(MMU_KERNEL_BASE + MMU_KERNEL_PMA))
+#define MMU_VMA2PMA(x)  (((uintptr_t)(x)) - MMU_KERNEL_BASE)
+#define MMU_PMA2VMA(x)  (((uintptr_t)(x)) + MMU_KERNEL_BASE)
+
 // MMU recursive mapping (-4MB ~ TOP)
 #define MMU_RECURSIVE_SLOT (1023UL)
 // MMU Page Allocator (-8MB ~ -4MB), requires 4 MiB to story frames for 4GB ram
@@ -30,6 +38,13 @@ volatile MMU_PHYADDR* MMU_frames = (MMU_PHYADDR*)MMU_FRAMEPOOL_VMA;
 volatile unsigned int MMU_frames_index = 0;  // index for next allocation
 _SPINLOCK MMU_lock = 0;
 
+void* mmu_pma2vma(uintptr_t pma) {
+    return (void*)MMU_PMA2VMA(pma);
+}
+MMU_PHYADDR mmu_vma2pma(void* p) {
+    return MMU_VMA2PMA(p);
+}
+
 bool mmu_mark(const void* addr, MMU_PHYADDR paddr, uint32_t flag) {
     uint32_t pd_index = MMU_PD_INDEX(addr);
     uint32_t pt_index = MMU_PT_INDEX(addr);
@@ -39,14 +54,14 @@ bool mmu_mark(const void* addr, MMU_PHYADDR paddr, uint32_t flag) {
         pd[pd_index] = MMU_PAGE_ONDEMAND|MMU_PROT_RW|MMU_PROT_USER;
     }
     if ((pt[pt_index] & MMU_PROT_PRESENT) == 0) {
-        if ((flag & MMU_PAGE_MAPPHY) == 0) {
+        if ((flag & MMU_PAGE_NOALLOC) == 0) {
             pt[pt_index] = (uint32_t)(MMU_PAGE_ONDEMAND | (flag & MMU_PROT_MASK));
         } else {
             pt[pt_index] = (uint32_t)(paddr | (flag & MMU_PROT_MASK) | MMU_PROT_PRESENT);
             _INVLPG(addr);
         }
     } else {
-        if ((flag & MMU_PAGE_MAPPHY) == 0) {
+        if ((flag & MMU_PAGE_NOALLOC) == 0) {
             pt[pt_index] = (pt[pt_index] & (~(uint32_t)MMU_PROT_MASK)) | ((uint32_t)flag & MMU_PROT_MASK);
         } else {
             kdebug("MMU : map fail, addr:%p paddr:%X flag=%d entry:%X\n", addr, paddr, flag, pt[pt_index]);

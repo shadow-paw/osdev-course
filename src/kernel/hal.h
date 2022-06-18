@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "mmu.h"
 #include "ddk/pci.h"
 #include "ddk/display.h"
 #include "ddk/uart.h"
@@ -16,6 +17,9 @@ class HAL {
     HAL();
 
     bool probe();
+
+    // initrd
+    bool probe_initrd(MMU_PHYADDR phyaddr, size_t size);
 
     // UART functions
     bool uart_putc(unsigned int port, char c);

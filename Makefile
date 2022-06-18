@@ -1,4 +1,4 @@
-.PHONY: build dist run debug gdb clean
+.PHONY: build dist initrd run debug gdb clean
 
 CROSS_AS=nasm
 CROSS_GCC=i686-elf-gcc
@@ -17,8 +17,16 @@ CROSS_GDB=i686-elf-gdb
 
 build:
 	@ARCH=i686 make kernel-build
-dist: build kernel-dist
-	@:
+dist: build
+	@mkdir -p dist/iso/boot/grub dist/iso/boot/i686
+	@cp src/boot/grub.cfg dist/iso/boot/grub/
+# i686: kernel
+	@cp $(KERNEL_PATH_BIN)kernel-i686.bin dist/iso/boot/i686/kernel.bin
+# i686: initrd
+	@rsync -qavr src/initrd/i686/ dist/initrd/i686/
+# TODO: copy modules
+	@tar -C dist/initrd/i686/ -czf dist/iso/boot/i686/initrd --owner=0 --group=0 --no-same-owner --no-same-permissions .
+	@grub-mkrescue -o dist/myos.iso dist/iso
 run: dist
 	@qemu-system-i386 -m 32 -display curses -cdrom dist/myos.iso
 debug: dist
@@ -113,12 +121,6 @@ $(DRIVERS_PATH_OBJ)%_c.o: $(DRIVERS_PATH_SRC)%.c Makefile
 	@echo "[CC  ] $<"
 	@mkdir -p $(dir $@)
 	@$(CROSS_GCC) $(CROSS_CFLAGS) -I$(KERNEL_PATH_SRC) -I$(KERNEL_ARCH_PATH_SRC) -MD -MP -c $< -o $@
-
-kernel-dist:
-	@mkdir -p dist/iso/boot/grub dist/iso/boot/i686
-	@cp src/boot/grub.cfg dist/iso/boot/grub/
-	@cp $(KERNEL_PATH_BIN)kernel-i686.bin dist/iso/boot/i686/kernel.bin
-	@grub-mkrescue -o dist/myos.iso dist/iso
 
 kernel-clean:
 	@-rm $(KERNEL_ALL_OBJ) $(KERNEL_ALL_DEP) $(KERNEL_BIN) $(KERNEL_SYM)
