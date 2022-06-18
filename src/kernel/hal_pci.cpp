@@ -33,13 +33,12 @@ bool HAL::probe_pci_found(const struct PCI_ADDR* addr, const struct PCI_INFO* in
     case 2:
         switch (info->subclass_code) {
         case 0:     // Ethernet
-            kdebug("Found NIC\n");
             break;
         } break;
     case 3:
         switch (info->subclass_code) {
         case 0:     // Display
-            kdebug("Found Display\n");
+            probe_display_found(&_drivers.pci, addr, info);
             break;
         } break;
     }

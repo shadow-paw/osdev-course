@@ -4,6 +4,9 @@
 extern "C" void kmain() {
     kernel::hal.probe();
 
+    kernel::hal.display_setmode(2);
+    kernel::hal.display_clearscreen();
+
     for (;;) {
         char name[1024];
         kernel::hal.uart_puts(0, "What is your name? ");
