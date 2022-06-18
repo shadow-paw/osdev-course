@@ -8,7 +8,7 @@ namespace kernel {
 bool HAL::probe_uart() {
     if (!driver_uart(&_drivers.uart)) return false;
     for (int port=0; port<4; port++) {
-        if (!_drivers.uart.open(&_devices.uart[port], port)) {
+        if (!_drivers.uart.open(&_drivers.uart, &_devices.uart[port], port)) {
             _devices.uart[port].port = 0xFFFFFFFF; // not available
         }
     }
@@ -16,11 +16,11 @@ bool HAL::probe_uart() {
 }
 bool HAL::uart_putc(unsigned int port, char c) {
     if (port >= 4) return false;
-    return _drivers.uart.putc(&_devices.uart[port], c);
+    return _drivers.uart.putc(&_drivers.uart, &_devices.uart[port], c);
 }
 char HAL::uart_getc(unsigned int port) {
     if (port >= 4) return false;
-    return _drivers.uart.getc(&_devices.uart[port]);
+    return _drivers.uart.getc(&_drivers.uart, &_devices.uart[port]);
 }
 bool HAL::uart_puts(unsigned int port, const char* s) {
     for (const char* p = s; *p; p++) {

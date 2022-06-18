@@ -17,7 +17,7 @@ bool HAL::probe_pci() {
                 addr.bus_id  = bus_id;
                 addr.slot_id = slot_id;
                 addr.func_id = func_id;
-                if (!_drivers.pci.get_info(&addr, &info)) continue;
+                if (!_drivers.pci.get_info(&_drivers.pci, &addr, &info)) continue;
                 probe_pci_found(&addr, &info);
             }
         }

@@ -4,6 +4,7 @@
 #include "pci.h"
 #include "uart.h"
 #include "display.h"
+#include "disk.h"
 
 #include "ioport.h"
 #include "mmu.h"

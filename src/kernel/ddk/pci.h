@@ -24,10 +24,10 @@ struct PCI_INFO {
 };
 
 struct PCI_DRIVER {
-    bool (*get_info)(const struct PCI_ADDR* addr, struct PCI_INFO* info);
-    bool (*get_bar)(const struct PCI_ADDR* addr, unsigned int index, uintptr_t* bar, uint32_t* size);
-    bool (*get_irq)(const struct PCI_ADDR* addr, uint32_t* irq);
-    bool (*command)(const struct PCI_ADDR* addr, uint16_t cmd);
+    bool (*get_info)(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, struct PCI_INFO* info);
+    bool (*get_bar)(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, unsigned int index, uintptr_t* bar, uint32_t* size);
+    bool (*get_irq)(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, uint32_t* irq);
+    bool (*command)(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, uint16_t cmd);
 };
 
 #ifdef __cplusplus

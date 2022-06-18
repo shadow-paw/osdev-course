@@ -13,13 +13,13 @@ bool HAL::probe_display_found(struct PCI_DRIVER* pci_driver, const struct PCI_AD
         if (!driver_bga(&_drivers.display)) return false;
     }
     // open display
-    return _drivers.display.open(&_devices.display, pci_driver, addr, info);
+    return _drivers.display.open(& _drivers.display, &_devices.display, pci_driver, addr, info);
 }
 bool HAL::display_setmode(unsigned int mode) {
-    return _drivers.display.set_mode(&_devices.display, mode);
+    return _drivers.display.set_mode(& _drivers.display, &_devices.display, mode);
 }
 bool HAL::display_clearscreen() {
-    return _drivers.display.clear_screen(&_devices.display);
+    return _drivers.display.clear_screen(& _drivers.display, &_devices.display);
 }
 
 }  // namespace

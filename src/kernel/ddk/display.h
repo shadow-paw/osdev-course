@@ -16,7 +16,9 @@ struct DISPLAY_MODEINFO {
     unsigned int pitch;
 };
 
+struct DISPLAY_DRIVER;
 struct DISPLAY_DEVICE {
+    struct DISPLAY_DRIVER*  driver;
     struct PCI_DRIVER*      pci_driver;
     struct PCI_ADDR         pci_addr;
     struct PCI_INFO         pci_info;
@@ -26,11 +28,11 @@ struct DISPLAY_DEVICE {
 };
 
 struct DISPLAY_DRIVER {
-    bool (*open)(struct DISPLAY_DEVICE* device, struct PCI_DRIVER* pci_driver, const struct PCI_ADDR* addr, const struct PCI_INFO* info);
-    bool (*close)(struct DISPLAY_DEVICE* device);
-    bool (*get_modeinfo)(struct DISPLAY_DEVICE* device, unsigned int mode, struct DISPLAY_MODEINFO* info);
-    bool (*set_mode)(struct DISPLAY_DEVICE* device, unsigned int mode);
-    bool (*clear_screen)(struct DISPLAY_DEVICE* device);
+    bool (*open)(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device, struct PCI_DRIVER* pci_driver, const struct PCI_ADDR* addr, const struct PCI_INFO* info);
+    bool (*close)(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device);
+    bool (*get_modeinfo)(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device, unsigned int mode, struct DISPLAY_MODEINFO* info);
+    bool (*set_mode)(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device, unsigned int mode);
+    bool (*clear_screen)(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device);
 };
 
 #ifdef __cplusplus

@@ -10,8 +10,7 @@ extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     kernel::hal.display_setmode(2);
     kernel::hal.display_clearscreen();
 
-    kdebug("multiboot->mods_count: %d\n", multiboot->mods_count);
-
+    // Mount initrd
     const struct MULTIBOOT_BOOTINFO_MODULES* mods = (const struct MULTIBOOT_BOOTINFO_MODULES*)(mmu_pma2vma(multiboot->mods_addr));
     for (uint32_t i=0; i<multiboot->mods_count; i++) {
         const char* name = (const char*)mmu_pma2vma(mods[i].name);

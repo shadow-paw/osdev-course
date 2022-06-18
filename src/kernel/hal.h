@@ -7,6 +7,7 @@
 #include "ddk/pci.h"
 #include "ddk/display.h"
 #include "ddk/uart.h"
+#include "ddk/disk.h"
 
 namespace kernel {
 
@@ -36,10 +37,12 @@ class HAL {
       struct PCI_DRIVER pci;
       struct UART_DRIVER uart;
       struct DISPLAY_DRIVER display;
+      struct DISK_DRIVER initrd;
     } _drivers;
     struct {
       struct UART_DEVICE uart[4];
       struct DISPLAY_DEVICE display;
+      struct DISK_DEVICE initrd;
     } _devices;
 
     bool probe_uart();

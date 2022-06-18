@@ -25,7 +25,7 @@ dist: build
 # i686: initrd
 	@rsync -qavr src/initrd/i686/ dist/initrd/i686/
 # TODO: copy modules
-	@tar -C dist/initrd/i686/ -czf dist/iso/boot/i686/initrd --owner=0 --group=0 --no-same-owner --no-same-permissions .
+	@find dist/initrd/i686/ -maxdepth 1 -printf "%P\n" | tar -C dist/initrd/i686/ -czf dist/iso/boot/i686/initrd --owner=0 --group=0 --no-same-owner --no-same-permissions -T -
 	@grub-mkrescue -o dist/myos.iso dist/iso
 run: dist
 	@qemu-system-i386 -m 32 -display curses -cdrom dist/myos.iso

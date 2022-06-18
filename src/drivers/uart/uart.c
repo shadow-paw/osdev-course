@@ -5,8 +5,8 @@
 
 static const uint16_t __UART_DRIVER_ioports[] = { 0x03F8, 0x02F8, 0x03E8, 0x02E8 };
 
-bool uart_open(struct UART_DEVICE* device, unsigned int port) {
-    if (!device || port >= 4) return false;
+bool uart_open(struct UART_DRIVER* driver, struct UART_DEVICE* device, unsigned int port) {
+    if (!driver || !device || port >= 4) return false;
     const uint16_t base = __UART_DRIVER_ioports[port];
     outb(base + 1, 0x00); // Disable all interrupts
     outb(base + 3, 0x80); // Enable DLAB (set baud rate divisor)
@@ -15,15 +15,21 @@ bool uart_open(struct UART_DEVICE* device, unsigned int port) {
     outb(base + 3, 0x03); // 8 bits, no parity, one stop bit
     outb(base + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
     outb(base + 4, 0x0B); // IRQs enabled, RTS/DSR set
+    device->driver = driver;
     device->port = port;
     return true;
 }
-bool uart_close(struct UART_DEVICE* device) {
+bool uart_close(struct UART_DRIVER* driver, struct UART_DEVICE* device) {
+    (void)driver;
+
     if (!device) return false;
+    device->driver = 0;
     device->port = -1;
     return true;
 }
-bool uart_putc(struct UART_DEVICE* device, char c) {
+bool uart_putc(struct UART_DRIVER* driver, struct UART_DEVICE* device, char c) {
+    (void)driver;
+
     if (!device || device->port >= 4) return false;
     const uint16_t base = __UART_DRIVER_ioports[device->port];
     while ((inb(base + 5) & 0x20) == 0) {
@@ -32,7 +38,9 @@ bool uart_putc(struct UART_DEVICE* device, char c) {
     outb(base, (uint8_t)c);
     return true;
 }
-char uart_getc(struct UART_DEVICE* device) {
+char uart_getc(struct UART_DRIVER* driver, struct UART_DEVICE* device) {
+    (void)driver;
+
     if (!device || device->port >= 4) return 0;
     const uint16_t base = __UART_DRIVER_ioports[device->port];
     // wait for input
@@ -41,7 +49,6 @@ char uart_getc(struct UART_DEVICE* device) {
     }
     return (char)inb(base);
 }
-
 bool driver_uart(struct UART_DRIVER* driver) {
     if (!driver) return false;
     driver->open = uart_open;

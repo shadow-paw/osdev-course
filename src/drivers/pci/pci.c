@@ -12,7 +12,9 @@ unsigned int pci_base(unsigned int bus_id, unsigned int slot_id, unsigned int fu
     return (unsigned int)(0x80000000 | (bus_id<<16) | (slot_id<<11) | (func_id<<8));
 }
 
-bool pci_get_info(const struct PCI_ADDR* addr, struct PCI_INFO* info) {
+bool pci_get_info(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, struct PCI_INFO* info) {
+    (void)driver;
+
     unsigned int base;
     uint32_t data;
     if (!addr || !info) return false;
@@ -30,7 +32,9 @@ bool pci_get_info(const struct PCI_ADDR* addr, struct PCI_INFO* info) {
     info->revision_id   = (unsigned int)(data & 0xFF);
     return true;
 }
-bool pci_get_bar(const struct PCI_ADDR* addr, unsigned int index, uintptr_t* bar, uint32_t* size) {
+bool pci_get_bar(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, unsigned int index, uintptr_t* bar, uint32_t* size) {
+    (void)driver;
+
     unsigned int base;
     uint32_t b=0, s=0;
     if (!addr || !bar || index > 4) return false;
@@ -49,7 +53,9 @@ bool pci_get_bar(const struct PCI_ADDR* addr, unsigned int index, uintptr_t* bar
     }
     return true;
 }
-bool pci_get_irq(const struct PCI_ADDR* addr, uint32_t* irq) {
+bool pci_get_irq(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, uint32_t* irq) {
+    (void)driver;
+
     unsigned int base;
     uint32_t data;
     if (!addr || !irq) return false;
@@ -60,7 +66,9 @@ bool pci_get_irq(const struct PCI_ADDR* addr, uint32_t* irq) {
     *irq = data & 0xFF;
     return true;
 }
-bool pci_command(const struct PCI_ADDR* addr, uint16_t cmd) {
+bool pci_command(struct PCI_DRIVER* driver, const struct PCI_ADDR* addr, uint16_t cmd) {
+    (void)driver;
+
     unsigned int base;
     if (!addr) return false;
     if ((base=pci_base(addr->bus_id, addr->slot_id, addr->func_id)) == 0) return false;

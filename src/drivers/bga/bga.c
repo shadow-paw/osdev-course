@@ -4,6 +4,7 @@
 #include "kdebug.h"
 #include "ddk/ddk.h"
 #include "bga.h"
+#include "kdebug.h"
 
 #define VBE_DISPI_IOPORT_INDEX  0x01CE
 #define VBE_DISPI_IOPORT_DATA   0x01CF
@@ -30,10 +31,11 @@ unsigned int bga_get_maxmode() {
     return (unsigned int)(sizeof(__bga_allowed_mode) / sizeof(struct DISPLAY_MODEINFO) -1);
 }
 
-bool bga_open(struct DISPLAY_DEVICE* device, struct PCI_DRIVER* pci_driver, const struct PCI_ADDR* addr, const struct PCI_INFO* info) {
-    if (!device || !pci_driver || !addr || !info) return false;
+bool bga_open(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device, struct PCI_DRIVER* pci_driver, const struct PCI_ADDR* addr, const struct PCI_INFO* info) {
+    if (!driver || !device || !pci_driver || !addr || !info) return false;
     if (info->class_code != 3 || info->subclass_code != 0) return false;
     if (info->device_id != 0x1111 || info->vendor_id != 0x1234) return false;
+    device->driver = driver;
     device->pci_driver = pci_driver;
     __builtin_memcpy(&device->pci_addr, addr, sizeof(device->pci_addr));
     __builtin_memcpy(&device->pci_info, info, sizeof(device->pci_info));
@@ -42,8 +44,11 @@ bool bga_open(struct DISPLAY_DEVICE* device, struct PCI_DRIVER* pci_driver, cons
     device->frame_buffer_size = 0;
     return true;
 }
-bool bga_close(struct DISPLAY_DEVICE* device) {
+bool bga_close(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device) {
+    (void)driver;
+
     if (!device) return false;
+    device->driver = 0;
     device->pci_driver = 0;
     __builtin_memset(&device->pci_addr, 0, sizeof(device->pci_addr));
     __builtin_memset(&device->pci_info, 0, sizeof(device->pci_info));
@@ -52,17 +57,20 @@ bool bga_close(struct DISPLAY_DEVICE* device) {
     device->frame_buffer_size = 0;
     return true;
 }
-bool bga_get_modeinfo(struct DISPLAY_DEVICE* device, unsigned int mode, struct DISPLAY_MODEINFO* info) {
+bool bga_get_modeinfo(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device, unsigned int mode, struct DISPLAY_MODEINFO* info) {
+    (void)driver;
+
     if (!device) return false;
     if (mode > bga_get_maxmode() ) return false;
     __builtin_memcpy(info, &__bga_allowed_mode[mode], sizeof(struct DISPLAY_MODEINFO));
     return true;
 }
-bool bga_set_mode(struct DISPLAY_DEVICE* device, unsigned int mode) {
-    uint32_t bar, size;
+bool bga_set_mode(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device, unsigned int mode) {
+    (void)driver;
 
+    uint32_t bar, size;
     if (!device) return false;
-    if (!bga_get_modeinfo(device, mode, &device->info)) return false;
+    if (!bga_get_modeinfo(driver, device, mode, &device->info)) return false;
     outw(VBE_DISPI_IOPORT_INDEX, VBE_DISPI_INDEX_ENABLE);
     outw(VBE_DISPI_IOPORT_DATA, 0);
     outw(VBE_DISPI_IOPORT_INDEX, VBE_DISPI_INDEX_XRES);
@@ -75,7 +83,7 @@ bool bga_set_mode(struct DISPLAY_DEVICE* device, unsigned int mode) {
     outw(VBE_DISPI_IOPORT_DATA, 0x41);
     device->info.mode = mode;
 
-    if (!device->pci_driver->get_bar(&device->pci_addr, 0, &bar, &size)) return false;
+    if (!device->pci_driver->get_bar(device->pci_driver, &device->pci_addr, 0, &bar, &size)) return false;
     // unmap previous frame buffer
     if (device->frame_buffer_size != 0) {
         mmu_munmap(device->frame_buffer, device->frame_buffer_size, MMU_MUNMAP_NORELEASE);
@@ -97,7 +105,9 @@ bool bga_set_mode(struct DISPLAY_DEVICE* device, unsigned int mode) {
            mode, device->info.width, device->info.height, device->info.bpp, bar, size);
     return true;
 }
-bool bga_clear_screen(struct DISPLAY_DEVICE* device) {
+bool bga_clear_screen(struct DISPLAY_DRIVER* driver, struct DISPLAY_DEVICE* device) {
+    (void)driver;
+
     if (!device) return false;
     kdebug("    BGA : Clear Screen\n");
     uint32_t* p = (uint32_t*)device->frame_buffer;
