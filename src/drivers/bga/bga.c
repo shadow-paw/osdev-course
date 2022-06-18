@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include "kdebug.h"
 #include "ddk/ddk.h"
 #include "bga.h"
 
@@ -86,7 +87,9 @@ bool bga_set_mode(struct DISPLAY_DEVICE* device, unsigned int mode) {
     if (size > frame_buffer_size) {
         size = frame_buffer_size;
     }
-    device->frame_buffer = (uint8_t*)FRAME_BUFFER_VMA;
+    if (device->frame_buffer == 0) {
+        device->frame_buffer = vma_alloc(frame_buffer_size);
+    }
     device->frame_buffer_size = (size_t)size;
     if (!mmu_mmap(device->frame_buffer, bar, size, MMU_PAGE_MAPPHY)) return false;
 

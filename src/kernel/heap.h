@@ -11,7 +11,7 @@ struct HEAP {
     unsigned int flag;
 };
 
-#define HEAP_ALLOC_MAPADDRESSONLY (0x00010000)
+#define HEAP_ALLOC_NOALLOC (0x00010000)
 
 #ifdef __cplusplus
 extern "C" {

@@ -2,8 +2,14 @@
 #include "heap.h"
 #include "kmalloc.h"
 
-
 extern char _kernel_end;
+
+struct HEAP __kheap_kmalloc = {
+    .start = (size_t)((char*)&_kernel_end) + 4096,
+    .ptr = 0,
+    .size = 1024*1024*16, // max heap size 16MB
+    .flag = 0
+};
 
 struct KMALLOC_FREENODE {
     struct KMALLOC_FREENODE* next;
@@ -13,14 +19,8 @@ struct KMALLOC_FREELIST {
     _SPINLOCK lock;
     struct KMALLOC_FREENODE node;
 };
-_SPINLOCK __kernel_heap_lock;
-struct HEAP __kernel_heap = {
-    .start = (size_t)((char*)&_kernel_end) + 4096,
-    .ptr = 0,
-    .size = 1024*1024*16, // max heap size 16MB
-    .flag = 0
-};
 // -------------------------------------------------
+_SPINLOCK __kernel_kmalloc_heap_lock;
 struct KMALLOC_FREELIST __kmalloc_64    = { .lock = 0, .node = { .next = 0, .size = 0} };
 struct KMALLOC_FREELIST __kmalloc_512   = { .lock = 0, .node = { .next = 0, .size = 0} };
 struct KMALLOC_FREELIST __kmalloc_1024  = { .lock = 0, .node = { .next = 0, .size = 0} };
@@ -63,9 +63,7 @@ void* kmalloc(size_t size) {
 
     if (node == 0) {
         _INT_DISABLE();
-        _SPIN_LOCK(&__kernel_heap_lock);
-        node = (struct KMALLOC_FREENODE*)heap_alloc(&__kernel_heap, size);
-        _SPIN_UNLOCK(&__kernel_heap_lock);
+        node = (struct KMALLOC_FREENODE*)heap_alloc(&__kheap_kmalloc, size);
         _INT_RESTORE();
         if (node == 0) return NULL;
         node->size = size;
