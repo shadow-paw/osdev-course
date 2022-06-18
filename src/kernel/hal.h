@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "ddk_pci.h"
 #include "ddk_uart.h"
 
 namespace kernel {
@@ -23,6 +24,7 @@ class HAL {
 
   private:
     struct {
+      struct PCI_DRIVER pci;
       struct UART_DRIVER uart;
     } _drivers;
     struct {
@@ -30,6 +32,8 @@ class HAL {
     } _devices;
 
     bool probe_uart();
+    bool probe_pci();
+    bool probe_pci_found(const struct PCI_ADDR* addr, const struct PCI_INFO* info);
 };
 
 extern HAL hal;

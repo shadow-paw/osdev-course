@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "pci.h"
+#include "ddk_pci.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,14 +17,15 @@ struct DISPLAY_MODEINFO {
 };
 
 struct BGA {
-    struct PCI_BUS_ADDR pci_addr;
-    struct PCI_BUS_INFO pci_info;
-    int                 current_mode;
-    uint8_t*            frame_buffer;
-    size_t              frame_buffer_size;
+    const struct PCI_DRIVER* pci_driver;
+    struct PCI_ADDR    pci_addr;
+    struct PCI_INFO    pci_info;
+    int                current_mode;
+    uint8_t*           frame_buffer;
+    size_t             frame_buffer_size;
 };
 
-bool bga_init(const struct PCI_BUS_ADDR* addr, const struct PCI_BUS_INFO* info);
+bool bga_init(const struct PCI_DRIVER* pci_driver, const struct PCI_ADDR* addr, const struct PCI_INFO* info);
 bool bga_fini();
 const struct DISPLAY_MODEINFO* bga_get_modeinfo(unsigned int mode);
 bool bga_set_mode(unsigned int mode);

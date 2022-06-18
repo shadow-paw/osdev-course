@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include "ioport.h"
 #include "mmu.h"
-#include "pci.h"
 #include "bga.h"
 #include "kdebug.h"
 
@@ -29,12 +28,13 @@ const struct DISPLAY_MODEINFO bga_allowed_mode[] = {
 
 struct BGA bga;
 
-bool bga_init(const struct PCI_BUS_ADDR* addr, const struct PCI_BUS_INFO* info) {
-    if (!addr || !info) return false;
+bool bga_init(const struct PCI_DRIVER* pci_driver, const struct PCI_ADDR* addr, const struct PCI_INFO* info) {
+    if (!pci_driver || !addr || !info) return false;
     if (info->class_code != 3 || info->subclass_code != 0) return false;
     if (info->device_id != 0x1111 || info->vendor_id != 0x1234) return false;
     // outw(VBE_DISPI_IOPORT_INDEX, VBE_DISPI_INDEX_ID);
     // kdebug ("bga: %X\n", (int)inw(VBE_DISPI_IOPORT_DATA) );
+    bga.pci_driver = pci_driver;
     __builtin_memcpy(&bga.pci_addr, addr, sizeof(bga.pci_addr));
     __builtin_memcpy(&bga.pci_info, info, sizeof(bga.pci_info));
     bga.current_mode = 0;
@@ -75,7 +75,7 @@ bool bga_set_mode(unsigned int mode) {
     outw(VBE_DISPI_IOPORT_INDEX, VBE_DISPI_INDEX_ENABLE);
     outw(VBE_DISPI_IOPORT_DATA, 0x41);
 
-    if (!pci_get_bar(&bga.pci_addr, 0, &bar, &size)) return false;
+    if (!bga.pci_driver->get_bar(&bga.pci_addr, 0, &bar, &size)) return false;
     if (bga.frame_buffer_size != 0) {
         mmu_munmap(bga.frame_buffer, bga.frame_buffer_size, MMU_MUNMAP_NORELEASE);
         bga.frame_buffer_size = 0;

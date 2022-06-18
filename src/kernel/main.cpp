@@ -1,18 +1,8 @@
-#include "inlineasm.h"
-#include "multiboot.h"
-#include "mmu.h"
-#include "kmalloc.h"
-#include "pic.h"
-#include "pci.h"
 #include "hal.h"
 #include "kdebug.h"
 
 extern "C" void kmain() {
     kernel::hal.probe();
-
-    pic_init();
-    _STI();
-    pci_scanbus();
 
     for (;;) {
         char name[1024];
