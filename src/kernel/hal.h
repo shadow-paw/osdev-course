@@ -8,6 +8,7 @@
 #include "ddk/display.h"
 #include "ddk/uart.h"
 #include "ddk/disk.h"
+#include "ddk/filesystem.h"
 
 namespace kernel {
 
@@ -38,11 +39,13 @@ class HAL {
       struct UART_DRIVER uart;
       struct DISPLAY_DRIVER display;
       struct DISK_DRIVER initrd;
+      struct FS_DRIVER tarfs;
     } _drivers;
     struct {
       struct UART_DEVICE uart[4];
       struct DISPLAY_DEVICE display;
       struct DISK_DEVICE initrd;
+      struct FS_DEVICE initrd_fs;
     } _devices;
 
     bool probe_uart();
