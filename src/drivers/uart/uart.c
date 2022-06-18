@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "ioport.h"
-#include "ddk_uart.h"
+#include "ddk/ddk.h"
+#include "uart.h"
 
 static const uint16_t __UART_DRIVER_ioports[] = { 0x03F8, 0x02F8, 0x03E8, 0x02E8 };
 

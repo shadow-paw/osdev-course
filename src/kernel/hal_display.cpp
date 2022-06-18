@@ -1,6 +1,6 @@
 #include <stdbool.h>
-#include "ddk_display.h"
-#include "driver_bga.h"
+#include "ddk/display.h"
+#include "drivers/bga/bga.h"
 #include "hal.h"
 #include "kdebug.h"
 

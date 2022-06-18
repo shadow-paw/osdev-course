@@ -1,5 +1,5 @@
-#ifndef KERNEL_INLINEASM_H__
-#define KERNEL_INLINEASM_H__
+#ifndef KERNEL_ARCH_I686_INLINEASM_H__
+#define KERNEL_ARCH_I686_INLINEASM_H__
 
 #include <stdint.h>
 #include <stddef.h>
@@ -63,4 +63,4 @@ static inline void _SPIN_UNLOCK(_SPINLOCK* lock) {
     *lock = 0;
 }
 
-#endif  // KERNEL_INLINEASM_H__
+#endif  // KERNEL_ARCH_I686_INLINEASM_H__

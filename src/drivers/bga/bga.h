@@ -1,10 +1,10 @@
-#ifndef KERNEL_DRIVER_BGA_H_
-#define KERNEL_DRIVER_BGA_H_
+#ifndef DRIVERS_BGA_BGA_H_
+#define DRIVERS_BGA_BGA_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "ddk_display.h"
+#include "ddk/display.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,4 +14,4 @@ bool driver_bga(struct DISPLAY_DRIVER* driver);
 }
 #endif
 
-#endif  // KERNEL_DRIVER_BGA_H_
+#endif  // DRIVERS_BGA_BGA_H_

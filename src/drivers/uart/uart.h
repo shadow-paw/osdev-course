@@ -1,10 +1,10 @@
-#ifndef KERNEL_DRIVER_UART_H_
-#define KERNEL_DRIVER_UART_H_
+#ifndef DRIVERS_UART_UART_H_
+#define DRIVERS_UART_UART_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "ddk_uart.h"
+#include "ddk/uart.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,4 +14,4 @@ bool driver_uart(struct UART_DRIVER* driver);
 }
 #endif
 
-#endif  // KERNEL_DRIVER_UART_H_
+#endif  // DRIVERS_UART_UART_H_

@@ -1,5 +1,6 @@
 #include <stdbool.h>
-#include "driver_pci.h"
+#include "ddk/display.h"
+#include "drivers/pci/pci.h"
 #include "hal.h"
 #include "kdebug.h"
 

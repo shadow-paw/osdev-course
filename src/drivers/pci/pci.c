@@ -1,9 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "ioport.h"
-#include "driver_pci.h"
-#include "kdebug.h"
+#include "ddk/ddk.h"
+#include "pci.h"
 
 #define PCI_CONFIG_ADDRESS (0xCF8)
 #define PCI_CONFIG_DATA    (0xCFC)

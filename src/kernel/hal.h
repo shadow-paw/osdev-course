@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "ddk_pci.h"
-#include "ddk_display.h"
-#include "ddk_uart.h"
+#include "ddk/pci.h"
+#include "ddk/display.h"
+#include "ddk/uart.h"
 
 namespace kernel {
 

@@ -1,5 +1,5 @@
-#ifndef KERNEL_MULTIBOOT_H_
-#define KERNEL_MULTIBOOT_H_
+#ifndef KERNEL_ARCH_I686_MULTIBOOT_H_
+#define KERNEL_ARCH_I686_MULTIBOOT_H_
 
 #include <stdint.h>
 
@@ -43,4 +43,4 @@ struct MULTIBOOT_BOOTINFO_MMAP {
   uint32_t type;
 };
 
-#endif  // KERNEL_MULTIBOOT_H_
+#endif  // KERNEL_ARCH_I686_MULTIBOOT_H_

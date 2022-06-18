@@ -1,10 +1,10 @@
-#ifndef KERNEL_DRIVER_PCI_H_
-#define KERNEL_DRIVER_PCI_H_
+#ifndef DRIVERS_PCI_PCI_H_
+#define DRIVERS_PCI_PCI_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "ddk_pci.h"
+#include "ddk/pci.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,4 +14,4 @@ bool driver_pci(struct PCI_DRIVER* driver);
 }
 #endif
 
-#endif  // KERNEL_DRIVER_PCI_H_
+#endif  // DRIVERS_PCI_PCI_H_

@@ -1,10 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "ioport.h"
-#include "mmu.h"
-#include "driver_bga.h"
-#include "kdebug.h"
+#include "ddk/ddk.h"
+#include "bga.h"
 
 #define VBE_DISPI_IOPORT_INDEX  0x01CE
 #define VBE_DISPI_IOPORT_DATA   0x01CF

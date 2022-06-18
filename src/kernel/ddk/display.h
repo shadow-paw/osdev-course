@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "ddk_pci.h"
+#include "pci.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,5 +1,5 @@
-#ifndef KERNEL_IOPORT_H_
-#define KERNEL_IOPORT_H_
+#ifndef KERNEL_ARCH_I686_IOPORT_H_
+#define KERNEL_ARCH_I686_IOPORT_H_
 
 #include <stdint.h>
 
@@ -36,4 +36,4 @@ static inline uint32_t inl(uint16_t port) {
 }  // extern "C"
 #endif
 
-#endif  // KERNEL_IOPORT_H_
+#endif  // KERNEL_ARCH_I686_IOPORT_H_

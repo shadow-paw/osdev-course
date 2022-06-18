@@ -1,5 +1,6 @@
 #include <stdbool.h>
-#include "driver_uart.h"
+#include "ddk/uart.h"
+#include "drivers/uart/uart.h"
 #include "hal.h"
 
 namespace kernel {

@@ -1,5 +1,5 @@
-#ifndef KERNEL_MMU_H_
-#define KERNEL_MMU_H_
+#ifndef KERNEL_ARCH_I686_MMU_H_
+#define KERNEL_ARCH_I686_MMU_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -39,5 +39,4 @@ bool mmu_munmap(const void* mem, size_t size, unsigned int flag);
 };
 #endif
 
-
-#endif  // KERNEL_MMU_H_
+#endif  // KERNEL_ARCH_I686_MMU_H_
