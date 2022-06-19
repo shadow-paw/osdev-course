@@ -1,4 +1,4 @@
-# Hardware Abstraction Layer
+# 7. Hardware Abstraction Layer
 
 ## Uniform Environment
 One of the purpose for OS is to provide an uniform environment so that application don't need
