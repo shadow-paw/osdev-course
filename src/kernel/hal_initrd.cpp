@@ -8,7 +8,7 @@
 
 namespace kernel {
 
-bool HAL::probe_initrd(MMU_PHYADDR phyaddr, size_t size) {
+bool HAL::probe_initrd(MMU_PHYADDR phyaddr, size_t size, const char* mount_point) {
     kdebug("Probe initrd at %p, size: %x\n", phyaddr, size);
     if (!driver_ramdisk(&_drivers.initrd)) return false;
     char *memory = (char*)vma_alloc(size);
@@ -18,15 +18,8 @@ bool HAL::probe_initrd(MMU_PHYADDR phyaddr, size_t size) {
     // assume tarfs
     if (!driver_tarfs(&_drivers.tarfs)) return false;
     if (!_drivers.tarfs.open(&_drivers.tarfs, &_devices.initrd_fs, &_devices.initrd)) return false;
-    // test code
-    struct FS_FSTAT stat;
-    if (_drivers.tarfs.fstat(&_drivers.tarfs, &_devices.initrd_fs, "test.txt", &stat)) {
-        kdebug("file length: %ld\n", stat.filelen);
-        char buf[512] = {0};
-        if (_drivers.tarfs.read(&_drivers.tarfs, &_devices.initrd_fs, "test.txt", buf, 0, stat.filelen) > 0) {
-            kdebug("file content: %s\n", buf);
-        }
-    }
+    // mount it
+    vfs.mount(mount_point, &_devices.initrd_fs);
     return true;
 }
 

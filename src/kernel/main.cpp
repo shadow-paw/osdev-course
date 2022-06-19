@@ -16,7 +16,18 @@ extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
         const char* name = (const char*)mmu_pma2vma(mods[i].name);
         if (kstrcmp(name, "initrd") == 0) {
             size_t size = (size_t)(mods[i].end - mods[i].start);
-            kernel::hal.probe_initrd(mods[i].start, size);
+            kernel::hal.probe_initrd(mods[i].start, size, "/initrd/");
+        }
+    }
+
+    // test code
+    struct FS_FSTAT stat;
+    if (kernel::vfs.fstat("/initrd/test.txt", &stat)) {
+        kdebug("file length: %ld\n", stat.filelen);
+        char buf[512] = {0};
+        if (kernel::vfs.read("/initrd/test.txt", buf, 0, stat.filelen) > 0) {
+            buf[stat.filelen] = 0;
+            kdebug("file content: %s\n", buf);
         }
     }
 

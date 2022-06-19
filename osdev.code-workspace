@@ -21,6 +21,9 @@
                 "editor.rulers": [
                         120
                 ],
-                "files.eol": "\n"
+                "files.eol": "\n",
+                "files.associations": {
+                        "xutility": "cpp"
+                }
         }
 }

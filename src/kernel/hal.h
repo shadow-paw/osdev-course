@@ -9,6 +9,7 @@
 #include "ddk/uart.h"
 #include "ddk/disk.h"
 #include "ddk/filesystem.h"
+#include "vfs.h"
 
 namespace kernel {
 
@@ -17,11 +18,10 @@ class HAL {
     static HAL* inst;
 
     HAL();
-
     bool probe();
 
     // initrd
-    bool probe_initrd(MMU_PHYADDR phyaddr, size_t size);
+    bool probe_initrd(MMU_PHYADDR phyaddr, size_t size, const char* mount_point);
 
     // UART functions
     bool uart_putc(unsigned int port, char c);
