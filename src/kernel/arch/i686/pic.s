@@ -6,7 +6,7 @@ bits 32
 %include "kernel.inc"
 
 global pic_init
-extern idt_set, _timer
+extern idt_set, scheduler_tick
 
 %define PIC_MASTER_CMD  (0x20)
 %define PIC_MASTER_DATA (0x21)
@@ -14,7 +14,6 @@ extern idt_set, _timer
 %define PIC_SLAVE_DATA  (0xA1)
 
 section .text
-; ----------------------------------------------
 pic_init:
     call    idt_set, IRQ_BASE_INTNUM + 0, PIC_IRQ_00, 1000111000000000b    ; P DPL=0 TYPE=1110
     call    idt_set, IRQ_BASE_INTNUM + 1, PIC_IRQ_01, 1000111000000000b    ; P DPL=0 TYPE=1110
@@ -50,7 +49,7 @@ pic_init:
     xor     al, al
     out     PIC_MASTER_DATA, al
     out     PIC_SLAVE_DATA, al
-    ; Setup PIT timer with ~1000 Hz
+    ; Setup PIT timer
     mov     al, 0x36
     out     0x43, al
     ; 1193180/1000Hz = 0x04A9
@@ -58,7 +57,6 @@ pic_init:
     ; out     0x40, al
     ; mov     al, 0x04
     ; out     0x40, al
-
     ; (1193180/18.2Hz) = 0xffff
     mov     al, 0xff
     out     0x40, al
@@ -71,13 +69,10 @@ pic_init:
 ; ----------------------------------------------
 align 16
 PIC_IRQ_00:      ; PIT
-    push    eax
+    pusha
     mov     al, 0x20
     out     0x20, al
-    pop     eax
-    pusha
-    rdtsc
-    call    _timer, eax, edx
+    call    scheduler_tick
     popa
     iretd
 

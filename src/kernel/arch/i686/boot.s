@@ -3,7 +3,7 @@ bits 32
 
 %include "kernel.inc"
 
-global bootstrap, MMU_PD
+global bootstrap, MMU_PD, tss
 extern kmain, idt_init, mmu_init
 extern _kernel_end
 extern ctor_start, ctor_end, dtor_start, dtor_end

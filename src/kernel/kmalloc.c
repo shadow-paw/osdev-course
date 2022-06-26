@@ -62,9 +62,7 @@ void* kmalloc(size_t size) {
     _INT_RESTORE();
 
     if (node == 0) {
-        _INT_DISABLE();
         node = (struct KMALLOC_FREENODE*)heap_alloc(&__kheap_kmalloc, size);
-        _INT_RESTORE();
         if (node == 0) return NULL;
         node->size = size;
     }

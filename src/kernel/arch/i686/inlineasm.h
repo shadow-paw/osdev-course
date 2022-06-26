@@ -5,8 +5,8 @@
 #include <stddef.h>
 
 // -------------------------------------------------
-#define _INT_DISABLE()  __asm volatile("pushf\ncli")
-#define _INT_RESTORE()  __asm volatile("popf")
+#define _INT_DISABLE() __asm volatile("pushf\ncli")
+#define _INT_RESTORE() __asm volatile("popf")
 static inline void _CLI() { __asm volatile("cli"); }
 static inline void _STI() { __asm volatile("sti"); }
 static inline void _HLT() { __asm volatile("hlt"); }

@@ -23,6 +23,7 @@ dist: build
 # i686: kernel
 	@cp $(KERNEL_PATH_BIN)kernel-i686.bin dist/iso/boot/i686/kernel.bin
 # i686: initrd
+	@mkdir -p dist/initrd/i686/
 	@rsync -qavr src/initrd/i686/ dist/initrd/i686/
 # TODO: copy modules
 	@find dist/initrd/i686/ -maxdepth 1 -printf "%P\n" | tar -C dist/initrd/i686/ -czf dist/iso/boot/i686/initrd --owner=0 --group=0 --no-same-owner --no-same-permissions -T -
@@ -95,7 +96,7 @@ $(KERNEL_BIN): kernel-mkdir $(KERNEL_ALL_OBJ) $(KERNEL_ARCH_PATH_SRC)kernel.ld M
 
 $(KERNEL_PATH_OBJ)%_s.o: $(KERNEL_PATH_SRC)%.s Makefile
 	@echo "[AS  ] $<"
-	@$(CROSS_AS) $(CROSS_ASMFLAGS) -I$(KERNEL_PATH_SRC) -MD $(KERNEL_PATH_OBJ)$*_s.d -MP -o $@ $<
+	@$(CROSS_AS) $(CROSS_ASMFLAGS) -I$(KERNEL_PATH_SRC) -I$(KERNEL_ARCH_PATH_SRC) -MD $(KERNEL_PATH_OBJ)$*_s.d -MP -o $@ $<
 
 $(KERNEL_PATH_OBJ)%_c.o: $(KERNEL_PATH_SRC)%.c Makefile
 	@echo "[CC  ] $<"
