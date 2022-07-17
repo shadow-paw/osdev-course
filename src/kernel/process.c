@@ -1,5 +1,7 @@
+#include "kaddr.h"
 #include "kmalloc.h"
 #include "mmu.h"
+#include "heap.h"
 #include "scheduler.h"
 #include "process.h"
 
@@ -12,8 +14,13 @@ struct PROCESS_START_DATA {
 };
 
 void _process_startfunc(void* ud) {
+    static const size_t app_stack_size = 8192;
     struct PROCESS_START_DATA* psd = (struct PROCESS_START_DATA*)ud;
-    psd->startfunc(psd->process, psd->ud);
+    // create app stack and heap
+    uint8_t* app_stack = (uint8_t*)KADDR_APP_STACK - app_stack_size;
+    heap_create(&psd->process->heap, (void*)KADDR_APP_HEAP, 1024*1024*32, MMU_PROT_RW|MMU_PROT_USER);
+    mmu_mmap(app_stack, 0, app_stack_size, MMU_PROT_RW|MMU_PROT_USER);
+    psd->startfunc();
 }
 void _process_exitfunc(void* ud) {
     struct PROCESS_START_DATA* psd = (struct PROCESS_START_DATA*)ud;

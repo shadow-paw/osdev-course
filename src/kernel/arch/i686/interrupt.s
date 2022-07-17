@@ -7,6 +7,7 @@ global idt_init, idt_set
 extern INT_00, INT_01, INT_02, INT_03, INT_04, INT_05, INT_06, INT_07
 extern INT_08,         INT_0A, INT_0B, INT_0C, INT_0D, INT_0E, INT_0F
 extern INT_10, INT_11, INT_12, INT_13
+extern _syscall
 
 section .bss
 ; ----------------------------------------------
@@ -41,6 +42,8 @@ idt_init:
     call    idt_set, 0x11, dword _INT_11, 1000111000000000b    ; P DPL=0 TYPE=1110
     call    idt_set, 0x12, dword _INT_12, 1000111000000000b    ; P DPL=0 TYPE=1110
     call    idt_set, 0x13, dword _INT_13, 1000111000000000b    ; P DPL=0 TYPE=1110
+    ; old fashion syscall
+    call    idt_set, 0x80, dword _syscall, 1110111000000000b    ; P DPL=3 TYPE=1110
     lidt    [idtr]
     ret
 

@@ -8,12 +8,26 @@
 #include "process.h"
 #include "kdebug.h"
 
-extern "C" void process_startfunc(struct PROCESS *process, void*) {
-    uint32_t cr3;
+uint32_t syscall_getpid() {
+    uint32_t pid;
+    __asm volatile(
+        "int 0x80"
+        : "=A"(pid)
+        : "a"(8)
+    );
+    return pid;
+}
+void syscall_usleep(unsigned int usec) {
+    __asm volatile(
+        "int 0x80"
+        :
+        : "a"(12), "b"(usec)
+    );
+}
+extern "C" void process_startfunc() {
     for (;;) {
-        __asm volatile("mov %0, cr3" : "=A"(cr3));
-        kdebug("process %d, cr3: %X\n", process->pid, cr3);
-        scheduler_sleep(10);
+        kdebug("process %d\n", syscall_getpid());
+        syscall_usleep(1000000);
     }
 }
 extern "C" void zombie_cleaner(void*) {
@@ -28,13 +42,6 @@ extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     kernel::hal.display_setmode(2);
     kernel::hal.display_clearscreen();
 
-    struct TCB* tcb_zombie_cleaner = (struct TCB*)kmalloc(sizeof(struct TCB));
-    tcb_init(tcb_zombie_cleaner, NULL, 0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, zombie_cleaner, NULL, NULL);
-    scheduler_run(tcb_zombie_cleaner);
-
-    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
-    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
-
     // Mount initrd
     const struct MULTIBOOT_BOOTINFO_MODULES* mods = (const struct MULTIBOOT_BOOTINFO_MODULES*)(mmu_pma2vma(multiboot->mods_addr));
     for (uint32_t i=0; i<multiboot->mods_count; i++) {
@@ -44,6 +51,13 @@ extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
             kernel::hal.probe_initrd(mods[i].start, size, "/initrd/");
         }
     }
+
+    struct TCB* tcb_zombie_cleaner = (struct TCB*)kmalloc(sizeof(struct TCB));
+    tcb_init(tcb_zombie_cleaner, NULL, 0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, zombie_cleaner, NULL, NULL);
+    scheduler_run(tcb_zombie_cleaner);
+
+    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
+    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
 
     // // test code
     // struct FS_FSTAT stat;
