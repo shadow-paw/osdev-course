@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "inlineasm.h"
 #include "multiboot.h"
+#include "kaddr.h"
 #include "mmu.h"
 #include "kdebug.h"
 
@@ -152,6 +153,21 @@ bool mmu_munmap(const void* mem, size_t size, unsigned int flag) {
         }
     }
     return true;
+}
+MMU_PHYADDR mmu_clone_pagedir(void) {
+    uint32_t* clonepd_vma = (uint32_t*)KADDR_CLONDPD;
+    MMU_PHYADDR clonepd_pma = mmu_alloc();
+    if (clonepd_pma == 0) return 0;
+    if (!mmu_mmap(clonepd_vma, clonepd_pma, 4096, MMU_PAGE_NOALLOC)) {
+        mmu_free(clonepd_pma);
+        return 0;
+    }
+    __builtin_memset(clonepd_vma, 0, 4096);
+    // copy higher half address spaces
+    __builtin_memcpy(&clonepd_vma[512], &MMU_PD[512], 512*4);
+    clonepd_vma[MMU_RECURSIVE_SLOT] = (uint32_t)(clonepd_pma +3);
+    mmu_munmap(clonepd_vma, 4096, MMU_MUNMAP_NORELEASE);
+    return clonepd_pma;
 }
 void INT_0E(uint32_t code, uint32_t addr, uint32_t ip) {
     uint32_t page, prot, pd_index;

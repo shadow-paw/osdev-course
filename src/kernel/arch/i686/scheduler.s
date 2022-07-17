@@ -11,7 +11,7 @@ struc SCHEDULER
     s_quantum resd    1
     s_current resd    1
 endstruc
-struc TCB
+struc TCB_CONTEXT
     tcb_eax         resd    1
     tcb_ebx         resd    1
     tcb_ecx         resd    1
@@ -22,7 +22,7 @@ struc TCB
     tcb_edi         resd    1
     tcb_eflags      resd    1
     tcb_esp0        resd    1
-    tcb_kstack      resd    1
+    tcb_pagedir     resd    1
 endstruc
 
 section .text
@@ -55,6 +55,11 @@ scheduler_yield:
     call    scheduler_pick
     mov     [g_scheduler + s_current], eax
     ; Load CPU Context
+    mov     ebx, [eax + tcb_pagedir]
+    or      ebx, ebx
+    jz      .skip_pagedir
+    mov     cr3, ebx
+.skip_pagedir:
     mov     ebx, [eax +tcb_eflags]
     mov     ecx, [eax +tcb_esp0]
     mov     ebp, [eax +tcb_ebp]

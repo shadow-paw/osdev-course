@@ -1,11 +1,12 @@
 #include "inlineasm.h"
+#include "kaddr.h"
 #include "heap.h"
 #include "kmalloc.h"
 
 extern char _kernel_end;
 
 struct HEAP __kheap_kmalloc = {
-    .start = (size_t)((char*)&_kernel_end) + 4096,
+    .start = (size_t)((uintptr_t)&_kernel_end) + 4096,
     .ptr = 0,
     .size = 1024*1024*16, // max heap size 16MB
     .flag = 0

@@ -29,6 +29,7 @@ bool mmu_mmap(const void* mem, MMU_PHYADDR paddr, size_t size, unsigned int flag
 bool mmu_munmap(const void* mem, size_t size, unsigned int flag);
 void* mmu_pma2vma(uintptr_t pma);
 MMU_PHYADDR mmu_vma2pma(void* p);
+MMU_PHYADDR mmu_clone_pagedir(void);
 #ifdef __cplusplus
 };
 #endif

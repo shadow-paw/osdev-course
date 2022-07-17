@@ -6,7 +6,7 @@
 
 struct SCHEDULER  g_scheduler;
 struct TCB g_kthread_main;
-unsigned int _scheudler_next_thread_id = 1;
+uint32_t _scheudler_next_thread_id = 1;
 
 bool scheduler_init(void) {
     __builtin_memset(&g_scheduler, 0, sizeof(g_scheduler));

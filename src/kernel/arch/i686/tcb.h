@@ -3,18 +3,20 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "mmu.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct __attribute__ ((packed)) TCB {
+struct PROCESS;
+struct TCB {
     struct {
         uint32_t eax, ebx, ecx, edx;
         uint32_t ebp, esp, esi, edi;
         uint32_t eflags;
         uint32_t esp0;
-    } __attribute__ ((packed)) cpu;
+        MMU_PHYADDR pagedir;
+    } __attribute__ ((packed)) context;
     void* kstack;
     // Scheduling
     uint32_t elapsed;
@@ -24,13 +26,19 @@ struct __attribute__ ((packed)) TCB {
     // Information
     uint32_t thread_id;
     uint32_t flags;
+    struct PROCESS* process;
     // Chain
     struct TCB* next;
     struct TCB* prev;
 } ;
 
 typedef void (*TCB_FUNC)(void* ud);
-bool tcb_init(struct TCB* tcb, uint32_t priority, uint32_t quantum, size_t kstack_size, TCB_FUNC startfunc, TCB_FUNC exitfunc, void* ud);
+bool tcb_init(
+    struct TCB* tcb,
+    struct PROCESS* process,
+    MMU_PHYADDR pagedir,
+    uint32_t priority, uint32_t quantum,
+    size_t kstack_size, TCB_FUNC startfunc, TCB_FUNC exitfunc, void* ud);
 
 #ifdef __cplusplus
 }  // extern "C"

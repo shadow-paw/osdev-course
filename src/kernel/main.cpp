@@ -5,45 +5,35 @@
 #include "kmalloc.h"
 #include "hal.h"
 #include "scheduler.h"
+#include "process.h"
 #include "kdebug.h"
 
+extern "C" void process_startfunc(struct PROCESS *process, void*) {
+    uint32_t cr3;
+    for (;;) {
+        __asm volatile("mov %0, cr3" : "=A"(cr3));
+        kdebug("process %d, cr3: %X\n", process->pid, cr3);
+        scheduler_sleep(10);
+    }
+}
 extern "C" void zombie_cleaner(void*) {
     for (;;) {
         scheduler_cleanzombie();
         scheduler_sleep(10);
     }
 }
-extern "C" void thread_func1(void*) {
-    for (int i=0; i<10; i++) {
-        kdebug("thread %d\n", scheduler_current()->thread_id);
-        scheduler_sleep(10);
-    }
-}
-extern "C" void thread_func2(void*) {
-    for (;;) {
-        kdebug("thread %d\n", scheduler_current()->thread_id);
-        scheduler_sleep(3);
-    }
-}
-void thread_exitfunc(void*) {
-    scheduler_exitthread();
-}
-
 extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     scheduler_init();
     kernel::hal.probe();
     kernel::hal.display_setmode(2);
     kernel::hal.display_clearscreen();
 
-    struct TCB* tcb0 = (struct TCB*)kmalloc(sizeof(struct TCB));
-    struct TCB* tcb1 = (struct TCB*)kmalloc(sizeof(struct TCB));
-    struct TCB* tcb2 = (struct TCB*)kmalloc(sizeof(struct TCB));
-    tcb_init(tcb0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, zombie_cleaner, NULL, NULL);
-    tcb_init(tcb1, SCHEDULE_PRIORITY_NORMAL, SCHEDULE_QUANTUM_SHORT, 4096, thread_func1, thread_exitfunc, NULL);
-    tcb_init(tcb2, SCHEDULE_PRIORITY_NORMAL, SCHEDULE_QUANTUM_SHORT, 4096, thread_func2, thread_exitfunc, NULL);
-    scheduler_run(tcb0);
-    scheduler_run(tcb1);
-    scheduler_run(tcb2);
+    struct TCB* tcb_zombie_cleaner = (struct TCB*)kmalloc(sizeof(struct TCB));
+    tcb_init(tcb_zombie_cleaner, NULL, 0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, zombie_cleaner, NULL, NULL);
+    scheduler_run(tcb_zombie_cleaner);
+
+    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
+    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
 
     // Mount initrd
     const struct MULTIBOOT_BOOTINFO_MODULES* mods = (const struct MULTIBOOT_BOOTINFO_MODULES*)(mmu_pma2vma(multiboot->mods_addr));
