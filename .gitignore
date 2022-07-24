@@ -1,8 +1,11 @@
 bin/
 obj/
+lib/
 dist/
+libc/
 tools/binutils-*
 tools/gcc-*
 tools/gdb-*
+tools/newlib-*
 tools/build-*
 .gdb_history

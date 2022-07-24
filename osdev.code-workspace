@@ -13,10 +13,13 @@
                         "**/bin/": true,
                         "**/dist/": true,
                         "**/obj/": true,
+                        "lib/": true,
+                        "libc/": true,
                         "tools/binutils-*": true,
                         "tools/build-*": true,
                         "tools/gcc-*": true,
-                        "tools/gdb-*": true
+                        "tools/gdb-*": true,
+                        "tools/newlib-*": true
                 },
                 "editor.rulers": [
                         120

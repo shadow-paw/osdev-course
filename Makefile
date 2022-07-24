@@ -13,10 +13,15 @@ CROSS_CPPFLAGS=-ffreestanding -std=c++17 -masm=intel \
                -fno-exceptions -fno-rtti -fno-stack-protector \
 			   -O2 -Wall -Wextra -g
 CROSS_LDFLAGS=-fPIC -ffreestanding -O2 -nostdlib
+CROSS_AR=i686-elf-ar
+CROSS_ARFLAGS=-rcs
 CROSS_GDB=i686-elf-gdb
 
+BASE_PATH_SRC=src/
+BASE_PATH_LIB=lib/
+
 build:
-	@ARCH=i686 make kernel-build
+	@ARCH=i686 make kernel-build libgloss-build usercrt-build
 dist: build
 	@mkdir -p dist/iso/boot/grub dist/iso/boot/i686
 	@cp src/boot/grub.cfg dist/iso/boot/grub/
@@ -44,7 +49,6 @@ clean:
 
 # Kernel
 ###########################################################
-BASE_PATH_SRC=src/
 KERNEL_PATH_SRC=$(BASE_PATH_SRC)kernel/
 KERNEL_PATH_OBJ=obj/kernel/
 KERNEL_PATH_BIN=bin/kernel/
@@ -125,3 +129,56 @@ $(DRIVERS_PATH_OBJ)%_c.o: $(DRIVERS_PATH_SRC)%.c Makefile
 
 kernel-clean:
 	@-rm $(KERNEL_ALL_OBJ) $(KERNEL_ALL_DEP) $(KERNEL_BIN) $(KERNEL_SYM)
+
+# LIBGLOSS
+###########################################################
+LIBGLOSS_PATH_SRC=$(BASE_PATH_SRC)libgloss/$(ARCH)/
+LIBGLOSS_PATH_OBJ=obj/libgloss/$(ARCH)/
+LIBGLOSS_ASM:=$(sort $(wildcard $(LIBGLOSS_PATH_SRC)*.s))
+LIBGLOSS_OBJ:=$(patsubst $(LIBGLOSS_PATH_SRC)%.s,$(LIBGLOSS_PATH_OBJ)%_s.o,$(LIBGLOSS_ASM))
+LIBGLOSS_DEP:=$(patsubst %.o,%.d,$(LIBGLOSS_OBJ))
+LIBGLOSS_LIB=$(BASE_PATH_LIB)/$(ARCH)/libgloss.a
+
+-include $(LIBGLOSS_DEP)
+
+libgloss-build: $(LIBGLOSS_LIB)
+	@:
+
+libgloss-mkdir:
+	@mkdir -p $(BASE_PATH_LIB)/$(ARCH)/ $(LIBGLOSS_PATH_OBJ)
+
+$(LIBGLOSS_LIB): libgloss-mkdir $(LIBGLOSS_OBJ) Makefile
+	@echo "[AR] $@"
+	@$(CROSS_AR) $(CROSS_ARFLAGS) $@ $(LIBGLOSS_OBJ)
+
+$(LIBGLOSS_PATH_OBJ)%_s.o: $(LIBGLOSS_PATH_SRC)%.s Makefile
+	@echo "[AS  ] $<"
+	@$(CROSS_AS) $(CROSS_ASMFLAGS) -MD $(LIBGLOSS_PATH_OBJ)$*_s.d -MP -o $@ $<
+
+libgloss-clean:
+	@-rm $(LIBGLOSS_PATH_OBJ) $(LIBGLOSS_DEP) $(LIBGLOSS_LIB)
+
+
+# LIBGLOSS
+###########################################################
+USERCRT_PATH_SRC=$(BASE_PATH_SRC)user_crt/$(ARCH)/
+USERCRT_PATH_OBJ=obj/user_crt/$(ARCH)/
+USERCRT_ASM:=$(sort $(wildcard $(USERCRT_PATH_SRC)*.s))
+USERCRT_OBJ:=$(patsubst $(USERCRT_PATH_SRC)%.s,$(USERCRT_PATH_OBJ)%.o,$(USERCRT_ASM))
+USERCRT_DEP:=$(patsubst %.o,%.d,$(USERCRT_OBJ))
+
+usercrt-build: usercrt-mkdir usercrt-lib
+	@:
+
+usercrt-mkdir:
+	@mkdir -p $(BASE_PATH_LIB)$(ARCH)/ $(USERCRT_PATH_OBJ)
+
+usercrt-lib: $(USERCRT_OBJ) Makefile
+	@cp -f $(USERCRT_OBJ) $(BASE_PATH_LIB)$(ARCH)/
+
+$(USERCRT_PATH_OBJ)%.o: $(USERCRT_PATH_SRC)%.s Makefile
+	@echo "[AS  ] $<"
+	@$(CROSS_AS) $(CROSS_ASMFLAGS) -MD $(USERCRT_PATH_OBJ)$*_s.d -MP -o $@ $<
+
+usercrt-clean:
+	@-rm $(USERCRT_OBJ) $(USERCRT_DEP)
