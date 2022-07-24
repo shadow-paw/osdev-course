@@ -10,6 +10,8 @@
                         ".gdb_history": true,
                         ".vscode/": true,
                         "*.code-workspace": true,
+                        "**/*.d": true,
+                        "**/*.o": true,
                         "**/bin/": true,
                         "**/dist/": true,
                         "**/obj/": true,

@@ -9,3 +9,5 @@ tools/gdb-*
 tools/newlib-*
 tools/build-*
 .gdb_history
+*.d
+*.o
