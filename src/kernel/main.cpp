@@ -56,19 +56,19 @@ extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
     tcb_init(tcb_zombie_cleaner, NULL, 0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, zombie_cleaner, NULL, NULL);
     scheduler_run(tcb_zombie_cleaner);
 
-    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
-    process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
+    // process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
+    // process_create(process_startfunc, NULL, SCHEDULE_PRIORITY_NORMAL);
 
     // // test code
-    // struct FS_FSTAT stat;
-    // if (kernel::vfs.fstat("/initrd/test.txt", &stat)) {
-    //     kdebug("file length: %ld\n", stat.filelen);
+    struct FS_FSTAT stat;
+    if (kernel::vfs.fstat("/initrd/testapp", &stat)) {
+        kdebug("file length: %ld\n", stat.filelen);
     //     char buf[512] = {0};
     //     if (kernel::vfs.read("/initrd/test.txt", buf, 0, stat.filelen) > 0) {
     //         buf[stat.filelen] = 0;
     //         kdebug("file content: %s\n", buf);
     //     }
-    // }
+    }
 
     for (;;) {
         char name[1024];
