@@ -19,7 +19,7 @@ struct PROCESS {
 };
 
 typedef void (*PROCESS_STARTFUNC)();
-struct PROCESS* process_create(PROCESS_STARTFUNC startfunc, void* ud, uint32_t priority);
+struct PROCESS* process_create(const char* program, uint32_t priority);
 struct PROCESS* process_current();
 
 #ifdef __cplusplus

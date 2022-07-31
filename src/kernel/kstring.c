@@ -9,6 +9,13 @@ size_t kmemcpy(void* des, const void* src, size_t len) {
     }
     return len;
 }
+void* kmemset(void* des, uint8_t value, size_t len) {
+    uint8_t* udes = (uint8_t*)des;
+    for (size_t i=0; i<len; i++) {
+        *udes++ = value;
+    }
+    return des;
+}
 size_t kstrncpy(char* des, const char* src, size_t deslen) {
     size_t copied = 0;
     if (deslen == 0) return 0;
