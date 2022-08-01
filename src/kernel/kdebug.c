@@ -107,6 +107,13 @@ void kdebug(const char* fmt, ...) {
                     }
                     kdebug_puts(buf);
                     break;
+                case 'c':
+                    u32 = va_arg(va, uint32_t);
+                    if (u32 == '\n') {
+                        kdebug_putc('\r');
+                    }
+                    kdebug_putc(u32);
+                    break;
                 case 's':
                     s = va_arg(va, const char*);
                     kdebug_puts(s);

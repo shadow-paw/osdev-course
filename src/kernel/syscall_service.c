@@ -27,7 +27,11 @@ size_t kservice_read(int fd, void* buf, size_t len) {
     return -1;
 }
 size_t kservice_write(int fd, char* s, size_t len) {
-    kdebug("SYSCALL: write(%d, %X, %d)\n", fd, s, len);
+    (void)fd;
+    // kdebug("SYSCALL: write(%d, %X, %d)\n", fd, s, len);
+    for (size_t i=0; i<len; i++) {
+        kdebug("%c", s[i]);
+    }
     return len;
 }
 int kservice_lseek(int fd, uint32_t offset, int whence) {
@@ -54,12 +58,13 @@ int kservice_fstat(int fd, void* st) {
     //                        //    st->st_blksize = 1;
     return 0;
 }
-size_t kservice_sbrk(size_t nbytes) {
+uint32_t kservice_sbrk(size_t nbytes) {
     kdebug ("SYSCALL: sbrk(%X)\n", nbytes);
-    return 0;
+    struct PROCESS* p = process_current();
+    return (uint32_t)heap_alloc(&p->heap, nbytes);
 }
 int kservice_usleep(unsigned int usec) {
-    kdebug("SYSCALL: usleep(%X)\n", usec);
+    // kdebug("SYSCALL: usleep(%X)\n", usec);
     scheduler_sleep(usec * 18 /1000/1000);
     return 0;
 }
