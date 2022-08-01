@@ -6,6 +6,9 @@
 #include "ld.h"
 #include "process.h"
 
+// ring3.s
+extern "C" void enter_ring3(uint32_t ring3_eip, uint32_t ring3_esp);
+
 uint32_t _next_process_id = 1;
 
 struct PROCESS_START_DATA {
@@ -22,8 +25,9 @@ void _process_startfunc(void* ud) {
     mmu_mmap(app_stack, 0, app_stack_size, MMU_PROT_RW|MMU_PROT_USER);
     kernel::ProgramLoader ld;
     ld.load_program(psd->program);
-    PROCESS_STARTFUNC f = (PROCESS_STARTFUNC)ld.get_entrypoint();
-    f();
+    // PROCESS_STARTFUNC f = (PROCESS_STARTFUNC);
+    // f();
+    enter_ring3(ld.get_entrypoint(), KADDR_APP_STACK);
 }
 void _process_exitfunc(void* ud) {
     struct PROCESS_START_DATA* psd = (struct PROCESS_START_DATA*)ud;
