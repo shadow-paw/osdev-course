@@ -24,10 +24,9 @@ void syscall_usleep(unsigned int usec) {
         : "a"(12), "b"(usec)
     );
 }
-extern "C" void process_startfunc() {
+extern "C" void idle_thread(void*) {
     for (;;) {
-        kdebug("process %d\n", syscall_getpid());
-        syscall_usleep(1000000);
+        __asm volatile("hlt");
     }
 }
 extern "C" void zombie_cleaner(void*) {
@@ -52,8 +51,11 @@ extern "C" void kmain(const struct MULTIBOOT_BOOTINFO* multiboot) {
         }
     }
 
+    struct TCB* tcb_idle_thread = (struct TCB*)kmalloc(sizeof(struct TCB));
     struct TCB* tcb_zombie_cleaner = (struct TCB*)kmalloc(sizeof(struct TCB));
+    tcb_init(tcb_idle_thread, NULL, 0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, idle_thread, NULL, NULL);
     tcb_init(tcb_zombie_cleaner, NULL, 0, SCHEDULE_PRIORITY_IDLE, SCHEDULE_QUANTUM_LONG, 4096, zombie_cleaner, NULL, NULL);
+    scheduler_run(tcb_idle_thread);
     scheduler_run(tcb_zombie_cleaner);
 
     process_create("/initrd/testapp", SCHEDULE_PRIORITY_NORMAL);
